@@ -1,0 +1,130 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cstdlib>
+#include <ctime>
+#include <chrono>
+
+using namespace std;
+using namespace chrono;
+
+//------------- MAX HEAPIFY -------------//
+void adjustMaxHeap(vector<int> &v, int size, int parent)
+{
+    while (true)
+    {
+        int left = parent * 2 + 1;
+        int right = parent * 2 + 2;
+        int big = parent;
+
+        if (left < size && v[left] > v[big])
+            big = left;
+
+        if (right < size && v[right] > v[big])
+            big = right;
+
+        if (big == parent)
+            break;
+
+        swap(v[parent], v[big]);
+        parent = big;
+    }
+}
+
+void sortUsingMaxHeap(vector<int> &v)
+{
+    int n = v.size();
+
+    for (int i = (n - 2) / 2; i >= 0; --i)
+        adjustMaxHeap(v, n, i);
+
+    while (n > 1)
+    {
+        swap(v[0], v[n - 1]);
+        n--;
+        adjustMaxHeap(v, n, 0);
+    }
+}
+
+//------------- MIN HEAPIFY -------------//
+void adjustMinHeap(vector<int> &v, int size, int parent)
+{
+    while (true)
+    {
+        int left = parent * 2 + 1;
+        int right = parent * 2 + 2;
+        int small = parent;
+
+        if (left < size && v[left] < v[small])
+            small = left;
+
+        if (right < size && v[right] < v[small])
+            small = right;
+
+        if (small == parent)
+            break;
+
+        swap(v[parent], v[small]);
+        parent = small;
+    }
+}
+
+void sortUsingMinHeap(vector<int> &v)
+{
+    int n = v.size();
+
+    for (int i = (n - 2) / 2; i >= 0; --i)
+        adjustMinHeap(v, n, i);
+
+    while (n > 1)
+    {
+        swap(v[0], v[n - 1]);
+        n--;
+        adjustMinHeap(v, n, 0);
+    }
+
+    reverse(v.begin(), v.end());
+}
+
+//------------- MAIN PROGRAM -------------//
+int main()
+{
+    int total;
+
+    cout << "Enter number of elements: ";
+    cin >> total;
+
+    vector<int> values(total);
+
+    srand((unsigned)time(nullptr));
+
+    for (auto &x : values)
+        x = rand() % 100000;
+
+    vector<int> maxVersion(values);
+    vector<int> minVersion(values);
+
+    auto t1 = steady_clock::now();
+    sortUsingMaxHeap(maxVersion);
+    auto t2 = steady_clock::now();
+
+    auto t3 = steady_clock::now();
+    sortUsingMinHeap(minVersion);
+    auto t4 = steady_clock::now();
+
+    auto maxNS = duration_cast<nanoseconds>(t2 - t1);
+    auto maxUS = duration_cast<microseconds>(t2 - t1);
+
+    auto minNS = duration_cast<nanoseconds>(t4 - t3);
+    auto minUS = duration_cast<microseconds>(t4 - t3);
+
+    cout << "\n========== MAX HEAP SORT ==========\n";
+    cout << "Nanoseconds  : " << maxNS.count() << " ns\n";
+    cout << "Microseconds : " << maxUS.count() << " us\n";
+
+    cout << "\n========== MIN HEAP SORT ==========\n";
+    cout << "Nanoseconds  : " << minNS.count() << " ns\n";
+    cout << "Microseconds : " << minUS.count() << " us\n";
+
+    return 0;
+}
