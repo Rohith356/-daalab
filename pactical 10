@@ -1,0 +1,104 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+struct Edge {
+    int u, v, weight;
+};
+
+// Compare edges by weight
+bool compare(Edge a, Edge b) {
+    return a.weight < b.weight;
+}
+
+// Find the parent of a vertex
+int findParent(int node, vector<int>& parent) {
+    if (parent[node] == node)
+        return node;
+
+    return parent[node] = findParent(parent[node], parent);
+}
+
+// Join two sets
+void unionSet(int u, int v, vector<int>& parent, vector<int>& rank) {
+    u = findParent(u, parent);
+    v = findParent(v, parent);
+
+    if (u != v) {
+        if (rank[u] < rank[v])
+            parent[u] = v;
+        else if (rank[u] > rank[v])
+            parent[v] = u;
+        else {
+            parent[v] = u;
+            rank[u]++;
+        }
+    }
+}
+
+int main() {
+    int V, E;
+
+    cout << "Enter number of vertices: ";
+    cin >> V;
+
+    cout << "Enter number of edges: ";
+    cin >> E;
+
+    vector<Edge> edges(E);
+
+    cout << "Enter edges (source destination weight):\n";
+
+    for (int i = 0; i < E; i++) {
+        cin >> edges[i].u
+            >> edges[i].v
+            >> edges[i].weight;
+    }
+
+    // Sort edges according to weight
+    sort(edges.begin(), edges.end(), compare);
+
+    vector<int> parent(V);
+    vector<int> rank(V, 0);
+
+    // Initially, every vertex is its own parent
+    for (int i = 0; i < V; i++) {
+        parent[i] = i;
+    }
+
+    vector<Edge> mst;
+    int totalCost = 0;
+
+    // Select edges for MST
+    for (Edge edge : edges) {
+
+        int u = findParent(edge.u, parent);
+        int v = findParent(edge.v, parent);
+
+        // If they don't form a cycle
+        if (u != v) {
+            mst.push_back(edge);
+            totalCost += edge.weight;
+
+            unionSet(u, v, parent, rank);
+        }
+
+        // MST contains V-1 edges
+        if (mst.size() == V - 1)
+            break;
+    }
+
+    // Display MST
+    cout << "\nEdges in Minimum Spanning Tree:\n";
+    cout << "Edge\tWeight\n";
+
+    for (Edge edge : mst) {
+        cout << edge.u << " - " << edge.v
+             << "\t" << edge.weight << endl;
+    }
+
+    cout << "\nTotal cost of MST: " << totalCost << endl;
+
+    return 0;
+}
